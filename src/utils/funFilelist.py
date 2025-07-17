@@ -3,19 +3,28 @@ import json
 from pathlib import Path
 from fastapi import Request
 
+import os
+
 async def getPath(request: Request) -> str:
     """
     frontend에서 통신으로 전달 받은 JSON의 note_path를 반환하는 함수
+    환경변수에서 NOTE_PATH를 우선적으로 사용
     """
+    # 환경변수에서 NOTE_PATH 확인
+    env_path = os.getenv("NOTE_PATH")
+    if env_path:
+        print(f"Using note path from environment variable: {env_path}")
+        return env_path
+    
     try:
         # JSON body에서 note_path를 가져오기
         body = await request.json()
-        path = body.get("note_path", "/home/noguri/문서/obsidian")
+        path = body.get("note_path", "/Users/nogyumin/obsidian")
         return path
     except Exception as e:
         print(f"JSON 파싱 오류: {e}")
         # 기본값 반환
-        return "/home/noguri/문서/obsidian"
+        return "/Users/nogyumin/obsidian"
 
 def scanFilelist(path: str) -> dict:
     """

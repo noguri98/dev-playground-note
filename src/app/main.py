@@ -3,6 +3,10 @@ import os
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 # 상위 디렉토리를 Python 경로에 추가하여 모듈 import 가능하게 함
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -38,7 +42,7 @@ def main():
         try:
             # JSON body에서 note_path 가져오기
             path = await getPath(request)
-            # print(f"Scanning path: {path}")
+            print(f"Scanning path: {path}")
             
             # 파일 구조를 JSON 형태로 스캔
             file_structure = scanFilelist(path)
