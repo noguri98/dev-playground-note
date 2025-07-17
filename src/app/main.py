@@ -33,7 +33,6 @@ def main():
     async def get_path(request: Request):
         """경로 확인용 엔드포인트"""
         path = await getPath(request)
-        print(f"Requested path: {path}")
         return {"path": path}
 
     @app.post("/api/filelist")
@@ -42,11 +41,9 @@ def main():
         try:
             # JSON body에서 note_path 가져오기
             path = await getPath(request)
-            print(f"Scanning path: {path}")
             
             # 파일 구조를 JSON 형태로 스캔
             file_structure = scanFilelist(path)
-            # print(f"Found file structure: {file_structure}")
             
             # 응답 반환
             response = {
@@ -71,10 +68,8 @@ def main():
         """기존 방식의 평면적인 파일 리스트 반환 (호환성용)"""
         try:
             path = await getPath(request)
-            # print(f"Scanning path (flat): {path}")
             
             file_list = scanFilelistFlat(path)
-            # print(f"Found {len(file_list)} files")
             
             response = {
                 "path": path,
@@ -102,7 +97,8 @@ def main():
     print("Server will be available at: http://localhost:8000")
     print("API Documentation: http://localhost:8000/docs")
     
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
+    # 로그 레벨을 WARNING으로 설정하여 성공 요청 로그 비활성화
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False, log_level="warning")
 
 if __name__ == "__main__":
     main()

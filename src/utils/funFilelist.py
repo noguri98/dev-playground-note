@@ -13,7 +13,6 @@ async def getPath(request: Request) -> str:
     # 환경변수에서 NOTE_PATH 확인
     env_path = os.getenv("NOTE_PATH")
     if env_path:
-        print(f"Using note path from environment variable: {env_path}")
         return env_path
     
     try:
@@ -66,13 +65,13 @@ def scanFilelist(path: str) -> dict:
                 result['_files'] = file_names
             
         except Exception as e:
-            print(f"디렉토리 {directory} 처리 중 오류: {e}")
+            # 디렉토리 처리 오류는 조용히 무시 (일반적인 경우)
+            pass
             
         return result
     
     try:
         if not os.path.exists(path):
-            print(f"경로가 존재하지 않습니다: {path}")
             return {}
             
         root_path = Path(path)
@@ -81,6 +80,7 @@ def scanFilelist(path: str) -> dict:
         return file_structure
         
     except Exception as e:
+        # 심각한 오류만 로그 출력
         print(f"파일 구조를 가져오는 중 오류 발생: {e}")
         return {}
 
@@ -104,5 +104,6 @@ def scanFilelistFlat(path: str) -> list[str]:
         return sorted(files)
         
     except Exception as e:
+        # 심각한 오류만 로그 출력
         print(f"평면 파일 리스트를 가져오는 중 오류 발생: {e}")
         return []
