@@ -62,7 +62,8 @@ def main():
         """헬스 체크 엔드포인트"""
         return {"status": "healthy", "message": "Server is running"}
 
-    print("Starting FastAPI server...")
+    print("dev-playground-note server is running")
+    print(f"note_path: {os.getenv('NOTE_PATH')}")
     print("Server will be available at: http://localhost:8000")
     print("API Documentation: http://localhost:8000/docs")
     

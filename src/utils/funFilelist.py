@@ -37,40 +37,11 @@ def get_manual_sorting_data(vault_path: str) -> dict:
     """
     try:
         manual_sorting_path = os.path.join(vault_path, '.obsidian', 'plugins', 'manual-sorting', 'data.json')
-        print(f"Manual Sorting 파일 경로 확인: {manual_sorting_path}")
-        print(f"파일 존재 여부: {os.path.exists(manual_sorting_path)}")
         
         if os.path.exists(manual_sorting_path):
-            print(f"파일 크기: {os.path.getsize(manual_sorting_path)} bytes")
             with open(manual_sorting_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            
-            # customFileOrder 구조 확인
-            custom_order = data.get('customFileOrder', {})
-            print(f"Manual Sorting 데이터 로드 성공: {len(custom_order)}개 경로 정렬 정보")
-            print(f"데이터 키들: {list(data.keys())}")
-            
-            # 데이터 구조 확인을 위한 샘플 출력
-            if custom_order:
-                sample_paths = list(custom_order.keys())[:3]  # 처음 3개만
-                print(f"샘플 경로들: {sample_paths}")
-                if "/" in custom_order:
-                    print(f"루트 경로 정렬: {custom_order['/']}")
             return data
-        else:
-            print("Manual Sorting 파일이 존재하지 않습니다.")
-            # .obsidian 폴더 구조 확인
-            obsidian_path = os.path.join(vault_path, '.obsidian')
-            if os.path.exists(obsidian_path):
-                print(f".obsidian 폴더 존재, 내용: {os.listdir(obsidian_path)}")
-                plugins_path = os.path.join(obsidian_path, 'plugins')
-                if os.path.exists(plugins_path):
-                    print(f"plugins 폴더 내용: {os.listdir(plugins_path)}")
-                    manual_path = os.path.join(plugins_path, 'manual-sorting')
-                    if os.path.exists(manual_path):
-                        print(f"manual-sorting 폴더 내용: {os.listdir(manual_path)}")
-            else:
-                print(".obsidian 폴더가 존재하지 않습니다.")
     except Exception as e:
         print(f"Manual Sorting 데이터 읽기 오류: {e}")
     
@@ -89,7 +60,6 @@ def get_obsidian_sort_order(vault_path: str) -> tuple[str, dict]:
     # Manual Sorting 플러그인 데이터 확인
     manual_data = get_manual_sorting_data(vault_path)
     if manual_data:
-        print(f"Manual Sorting 데이터 발견")
         return 'manual', manual_data
     
     try:
@@ -136,8 +106,6 @@ def sort_items_by_manual_order(items: list, manual_data: dict, current_path: str
         list: 정렬된 아이템 리스트
     """
     try:
-        print(f"Manual Sorting 적용 중 - 경로: '{current_path}', 아이템 수: {len(items)}")
-        
         # customFileOrder에서 현재 경로의 정렬 정보 찾기
         custom_order = manual_data.get('customFileOrder', {})
         
@@ -148,10 +116,7 @@ def sort_items_by_manual_order(items: list, manual_data: dict, current_path: str
         order_list = custom_order.get(path_key, [])
         
         if not order_list:
-            print(f"경로 '{path_key}'에 대한 정렬 정보 없음 - 원본 순서 유지")
             return items
-        
-        print(f"정렬 순서 발견: {order_list}")
         
         # 정렬된 아이템 리스트
         sorted_items = []
@@ -161,11 +126,8 @@ def sort_items_by_manual_order(items: list, manual_data: dict, current_path: str
         for order_item in order_list:
             # 경로에서 파일/폴더 이름만 추출
             if "/" in order_item:
-                # "archive/logs/file.md" -> "file.md"
-                # "archive/logs" -> "logs" (마지막 부분)
                 item_name = order_item.split("/")[-1]
             else:
-                # 루트 레벨의 경우 그대로 사용
                 item_name = order_item
             
             # 해당하는 아이템 찾기
@@ -173,16 +135,10 @@ def sort_items_by_manual_order(items: list, manual_data: dict, current_path: str
                 if item.name == item_name:
                     sorted_items.append(item)
                     remaining_items.remove(item)
-                    print(f"'{item_name}' 정렬 순서에 따라 배치")
                     break
         
         # 정렬 순서에 없는 나머지 아이템들 추가
-        if remaining_items:
-            print(f"정렬 순서에 없는 아이템 {len(remaining_items)}개 추가: {[item.name for item in remaining_items]}")
-            sorted_items.extend(remaining_items)
-        
-        result_names = [item.name for item in sorted_items]
-        print(f"최종 정렬 결과: {result_names}")
+        sorted_items.extend(remaining_items)
         
         return sorted_items
         
@@ -242,7 +198,6 @@ def scanFilelistUpdate(path: str) -> dict:
     
     # Obsidian 정렬 순서 가져오기
     sort_order, manual_data = get_obsidian_sort_order(path)
-    print(f"Obsidian 정렬 순서: {sort_order}")
     
     def build_file_structure(directory: Path, current_path: str = "") -> dict:
         """디렉토리를 재귀적으로 처리하여 JSON 구조 반환"""
@@ -279,7 +234,6 @@ def scanFilelistUpdate(path: str) -> dict:
             
         except Exception as e:
             # 디렉토리 처리 오류는 조용히 무시 (일반적인 경우)
-            print(f"디렉토리 처리 오류 ({directory}): {e}")
             pass
             
         return result
