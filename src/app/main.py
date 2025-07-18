@@ -11,7 +11,7 @@ load_dotenv()
 # 상위 디렉토리를 Python 경로에 추가하여 모듈 import 가능하게 함
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from utils.funFilelist import scanFilelist, scanFilelistFlat, getPath
+from utils.funFilelist import scanFilelist, scanFilelistFlat, scanFilelistUpdate, getPath
 
 def main():
     app = FastAPI(title="File List API", version="1.0.0")
@@ -29,12 +29,6 @@ def main():
     async def root():
         return {"message": "File List API Server is running"}
 
-    @app.post("/")
-    async def get_path(request: Request):
-        """경로 확인용 엔드포인트"""
-        path = await getPath(request)
-        return {"path": path}
-
     @app.post("/api/filelist")
     async def get_filelist(request: Request):
         """JSON 구조의 파일 리스트를 반환하는 메인 엔드포인트"""
@@ -42,8 +36,8 @@ def main():
             # JSON body에서 note_path 가져오기
             path = await getPath(request)
             
-            # 파일 구조를 JSON 형태로 스캔
-            file_structure = scanFilelist(path)
+            # Obsidian 정렬 순서를 유지하면서 파일 구조를 JSON 형태로 스캔
+            file_structure = scanFilelistUpdate(path)
             
             # 응답 반환
             response = {
@@ -59,31 +53,6 @@ def main():
             return {
                 "path": "",
                 "file_structure": {},
-                "status": "error",
-                "error_message": str(e)
-            }
-
-    @app.post("/api/filelist/flat")
-    async def get_filelist_flat(request: Request):
-        """기존 방식의 평면적인 파일 리스트 반환 (호환성용)"""
-        try:
-            path = await getPath(request)
-            
-            file_list = scanFilelistFlat(path)
-            
-            response = {
-                "path": path,
-                "file_list": file_list,
-                "status": "success"
-            }
-            
-            return response
-            
-        except Exception as e:
-            print(f"Error in get_filelist_flat: {e}")
-            return {
-                "path": "",
-                "file_list": [],
                 "status": "error",
                 "error_message": str(e)
             }
